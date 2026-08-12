@@ -142,6 +142,13 @@ with st.sidebar:
 
     st.divider()
 
+    mercado = st.radio(
+        "Mercado dos tickers",
+        ["B3 (Brasil) — adicionar .SA automaticamente", "Já incluo o sufixo (.SA, etc.) / mercado internacional"],
+    )
+
+    st.divider()
+
     percentual = st.number_input(
         "Percentual de queda para gatilho (%)",
         min_value=0.1, max_value=20.0, value=1.5, step=0.1,
@@ -164,9 +171,14 @@ if rodar:
         st.error("A data de início precisa ser anterior à data de fim.")
         st.stop()
 
-    with st.spinner(f"Baixando e analisando {len(tickers)} ticker(s)..."):
+    if mercado.startswith("B3"):
+        tickers_normalizados = [t if "." in t else f"{t}.SA" for t in tickers]
+    else:
+        tickers_normalizados = tickers
+
+    with st.spinner(f"Baixando e analisando {len(tickers_normalizados)} ticker(s)..."):
         df_resultado, df_historico, erros = identificar_trades(
-            tickers, str(data_inicio), str(data_fim), percentual
+            tickers_normalizados, str(data_inicio), str(data_fim), percentual
         )
 
     st.session_state["df_resultado"] = df_resultado

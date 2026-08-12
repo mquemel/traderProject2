@@ -123,10 +123,18 @@ st.caption("Baseado na estratégia: entra quando a mínima do dia cai X% abaixo 
 with st.sidebar:
     st.header("Configuração")
 
-    fonte = st.radio("Como informar os tickers?", ["Upload de CSV/Excel", "Digitar manualmente"])
+    fonte = st.radio("Como informar os tickers?", ["Usar arquivo do repositório (acoes_b3.csv)", "Upload de CSV/Excel", "Digitar manualmente"])
     tickers = []
 
-    if fonte == "Upload de CSV/Excel":
+    if fonte == "Usar arquivo do repositório (acoes_b3.csv)":
+        try:
+            planilha = pd.read_csv("acoes_b3.csv")
+            col_ticker = "Ticker" if "Ticker" in planilha.columns else planilha.columns[0]
+            tickers = planilha[col_ticker].dropna().astype(str).tolist()
+            st.success(f"{len(tickers)} tickers carregados de acoes_b3.csv")
+        except FileNotFoundError:
+            st.error("Arquivo acoes_b3.csv não encontrado no repositório. Suba um arquivo com esse nome junto do app.py.")
+    elif fonte == "Upload de CSV/Excel":
         arquivo = st.file_uploader("Arquivo com coluna 'Ticker'", type=["csv", "xlsx"])
         if arquivo is not None:
             if arquivo.name.endswith(".csv"):
